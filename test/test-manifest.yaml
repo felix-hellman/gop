@@ -1,0 +1,12 @@
+project:
+  dependencies:
+    - name: felixhellman/awesome-dependency
+      version: 0.0.1
+    - name: felixhellman/other-dependency
+      version: 1.0.5
+    - name: felixhellman/bleeding-edge
+      version: latest
+  repository:
+    - path: https://gop.isthatokay.com
+
+
