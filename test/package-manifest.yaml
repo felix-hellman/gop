@@ -1,6 +1,0 @@
-package:
-  name: dependency
-  author: felixhellman
-  version: 1.0
-  repository:
-    - path: https://gop.isthatokay.com

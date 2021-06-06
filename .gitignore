@@ -1,5 +1,4 @@
-package.zip
+gop.conf
+.idea/
 private-key.pem
 public-key.pem
-gop.conf
-.idea
