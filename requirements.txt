@@ -9,7 +9,7 @@ colorama==0.4.3
 command-not-found==0.3
 configobj==5.0.6
 constantly==15.1.0
-cryptography==3.2
+cryptography==3.3.2
 dbus-python==1.2.16
 Deprecated==1.2.12
 distro==1.4.0
@@ -21,7 +21,7 @@ hyperlink==19.0.0
 idna==2.8
 importlib-metadata==1.5.0
 incremental==16.10.1
-Jinja2==2.10.1
+Jinja2==2.11.3
 jsonpatch==1.22
 jsonpointer==2.0
 jsonschema==3.2.0
@@ -59,7 +59,7 @@ six==1.14.0
 sos==4.0
 ssh-import-id==5.10
 systemd-python==234
-Twisted==18.9.0
+Twisted==20.3.0
 ubuntu-advantage-tools==20.3
 ufw==0.36
 unattended-upgrades==0.1
