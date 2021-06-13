@@ -2,3 +2,4 @@ gop.conf
 .idea/
 private-key.pem
 public-key.pem
+__pycache__/

@@ -7,6 +7,6 @@ setup(name='gop',
       description='Client for managing godot packages',
       author='Felix Hellman',
       author_email='felixhellman.ro@gmail.com',
-      packages=['gop.py']),
+      packages=['./'],
       license='LICENSE.md',
-    )
+      )
