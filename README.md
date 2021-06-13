@@ -29,6 +29,8 @@ To deploy packages you need the following
 * A private/public RSA key pair in pem format
 * A package description in form of a yaml file
 
+By deploying a package you agree to that you are the rightful owner of what has been published.
+
 #### Startup
 
 To effectivly create a new account with gop you can do the following
