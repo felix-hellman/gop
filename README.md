@@ -5,6 +5,11 @@
 Gop is a package manager for godot.
 Currently only public packages are supported.
 
+## Installation
+```bash
+pip3 install git+https://github.com/felix-hellman/gop.git --user
+```
+
 ## How to use
 
 ### I want to install packages
