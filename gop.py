@@ -81,7 +81,7 @@ def fetch_dependency(repository, dependency):
     path = str(repository["path"])
     assert re.match(VERSION_REGEX, version), "Invalid version numbering"
     assert re.match(PATH_REGEX, path)
-    p = path + "/pkg/" + dependency["name"] + "/" + version
+    p = path + "/pkg/fetch/" + dependency["name"] + "/" + version
     r = requests.get(p, headers={"Content-Type": "application/json"})
     response = json.loads(r.content)
     author = response["author"]
@@ -108,9 +108,8 @@ def post_package(manifest, payload):
     path = str(manifest["project"]["repository"][0]['path'])
     package_name = str(manifest["project"]["package"]["name"])
     version = str(manifest["project"]["package"]["version"])
-    r = requests.post(path + "/pkg/add",
-                      data=json.dumps({"jwt": payload, 'package_name': package_name, 'version': version}),
-                      headers=load_token_header())
+    payload=json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
+    r = requests.post(path + "/pkg/add",data=payload, headers=load_token_header())
     print(r)
     print(r.content)
 
@@ -142,7 +141,7 @@ def load_token_header():
 
 
 def is_logged_in():
-    r = requests.get(BASE + "/ping", headers=load_token_header())
+    r = requests.post(BASE + "/ping", headers=load_token_header())
     return r.status_code == 200
 
 
