@@ -11,9 +11,9 @@ pip3 install git+https://github.com/felix-hellman/gop.git --user
 ```
 
 ### Windows
-When using windows you might need to add python to your path.
+When using windows you might need to add gop to your path.
 
-To go to where pip has installed python using gitbash and adding it to your path
+To go to where pip has installed gop using gitbash and adding it to your path
 ```bash
 cd `pip3 show gop | grep Location | awk '{print $2}'` && cd .. && cd Scripts/
 PATH="`pwd`:$PATH"
