@@ -75,3 +75,7 @@ To upload your package
 gop package --key-file=path/to/private/key
 ```
 Your private key is used for signing the package payload so that it can be verified on the server with the corresponding public key you uploaded
+
+
+### Example projects
+Usage of Genetic Algorithm - https://github.com/felix-hellman/gop-example-genetics
