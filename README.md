@@ -10,6 +10,16 @@ Currently only public packages are supported.
 pip3 install git+https://github.com/felix-hellman/gop.git --user
 ```
 
+### Windows
+When using windows you might need to add python to your path.
+
+To go to where pip has installed python using gitbash and adding it to your path
+```bash
+cd `pip3 show gop | grep Location | awk '{print $2}'` && cd .. && cd Scripts/
+PATH="`pwd`:$PATH"
+```
+
+
 ## How to use
 
 ### I want to install packages
