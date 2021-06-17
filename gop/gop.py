@@ -35,10 +35,10 @@ def cli():
 def generate_yaml_lines(name, author, version):
     lines = ['project:\n']
     if name is not None and author is not None and version is not None:
-        lines.append('    package:\n')
-        lines.append('      name: ' + name + '\n')
-        lines.append('      author: ' + author + '\n')
-        lines.append('      version: ' + version + '\n')
+        lines.append('  package:\n')
+        lines.append('    name: ' + name + '\n')
+        lines.append('    author: ' + author + '\n')
+        lines.append('    version: ' + version + '\n')
     lines.append('  dependencies:\n')
     lines.append('  repository:\n')
     lines.append('    - path: ' + BASE + '\n')
