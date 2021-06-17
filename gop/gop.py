@@ -186,6 +186,20 @@ def add_pkg(dependency, version):
         yaml.dump(manifest, f)
 
 
+@cli.command('search')
+@click.option('--author', required=True)
+def search(author):
+    manifest = parse_yaml("manifest.yaml")
+    path = str(manifest["project"]["repository"][0]["path"])
+    r = requests.get(path + "/pkg/list/" + str(author), headers={"Content-Type": "application/json"})
+    matches = json.loads(r.content)
+    for match in matches:
+        print(match)
+        split_match = match.split("/")
+        dependency , version = split_match[0] +"/"+ split_match[1], split_match[2]
+        print(F"gop add --dependency={dependency} --version={version}\n")
+
+
 @cli.command('login')
 @click.option('--token', required=False)
 def login(token):

@@ -32,6 +32,12 @@ gop add --dependency=felix-hellman/awesome --version=0.0.1
 gop install
 ```
 
+Searching for packages by author
+```bash
+gop search --author=felix-hellman
+```
+
+
 ### I want to deploy packages
 
 To deploy packages you need the following
