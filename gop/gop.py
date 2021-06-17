@@ -339,7 +339,7 @@ def parse_yaml(manifest):
 def package(key_file):
     key = read_key_from_file(key_file)
     manifest = parse_yaml('manifest.yaml')
-    token = pack(format_pkg_path(manifest), key, 'felix-hellman', manifest)
+    token = pack(format_pkg_path(manifest), key, manifest['project']['package']['author'], manifest)
     post_package(manifest, token)
     pass
 
