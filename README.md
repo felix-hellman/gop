@@ -81,6 +81,7 @@ To upload your package
 gop package --key-file=path/to/private/key
 ```
 Assuming you used the values above, gop will assume that your package source is located under `pkg/felix-hellman-awesome/`
+
 Your private key is used for signing the package payload so that it can be verified on the server with the corresponding public key you uploaded
 
 
