@@ -55,8 +55,15 @@ def init_project(name, author, version):
         directories.append('pkg/' + author + '-' + name)
     for directory in directories:
         os.makedirs("./" + directory, exist_ok=True)
-    with open('../.gitignore', 'a') as f:
-        f.writelines(['pkg\n', 'managed-assets\n'])
+    found_ignore = False
+    if os.path.isfile('.gitignore'):
+        with open('.gitignore', 'r') as f:
+            for line in f.readlines():
+                if 'pkg\n' in line or 'gop.conf\n' in line:
+                    found_ignore = True
+    if not found_ignore:
+        with open('.gitignore', 'a') as f:
+            f.writelines(['pkg\n', 'gop.conf\n'])
     with open('manifest.yaml', 'w') as f:
         f.writelines(generate_yaml_lines(name, author, version))
 
