@@ -200,6 +200,34 @@ def search(author):
         print(F"gop add --dependency={dependency} --version={version}\n")
 
 
+@cli.command('update')
+@click.option('--dry-run', required=False, count=True)
+def update(dry_run):
+    manifest = parse_yaml("manifest.yaml")
+    path = str(manifest["project"]["repository"][0]["path"])
+    updates = []
+    for dependency in manifest['project']['dependencies']:
+        name =  dependency['name']
+        version = dependency['version']
+        full_path = path + "/pkg/list/" + name
+        versions = json.loads(requests.get(full_path).content)
+        latest_version = sorted(versions).pop()
+        if latest_version > version:
+            updates.append(F"{name}/{version} => {name}/{latest_version}")
+            dependency['version'] = latest_version
+
+    if not dry_run:
+        for update in updates:
+            print(update)
+        with open('manifest.yaml', 'w') as f:
+            yaml.dump(manifest, f)
+    else:
+        for update in updates:
+            print(update)
+        print(yaml.dump(manifest))
+
+
+
 @cli.command('login')
 @click.option('--token', required=False)
 def login(token):

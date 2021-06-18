@@ -8,11 +8,11 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name='gop',
-    version='0.0.5',
+    version='0.0.6',
     packages=['gop'],
     url='https://gop.shrimpray.com',
     license='MIT License',
-    author='Wheely',
+    author='Felix Hellman',
     author_email='felixhellman.ro@gmail.com',
     description='Package manager for godot',
     install_requires=reqs,
