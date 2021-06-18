@@ -181,7 +181,14 @@ def add_pkg(dependency, version):
         manifest = yaml.load(document, Loader=Loader)
         if manifest['project']['dependencies'] is None:
             manifest['project']['dependencies'] = []
-        manifest['project']['dependencies'].append({"name": dependency, "version": version})
+        found = False
+        for dep in manifest['project']['dependencies']:
+            if dep['name'] in dependency:
+                found = True
+        if not found:
+            manifest['project']['dependencies'].append({"name": dependency, "version": version})
+        else:
+            print(F"Dependency {dependency} already exists")
     with open('manifest.yaml', 'w') as f:
         yaml.dump(manifest, f)
 
