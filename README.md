@@ -39,6 +39,7 @@ gop search --author=felix-hellman
 Automatically update dependencies to latest version
 ```bash
 gop update
+gop install
 ```
 
 e.g.
@@ -48,6 +49,7 @@ gop init
 gop add --dependency=felix-hellman/awesome --version=0.0.0
 gop add --dependency=felix-hellman/genetics --version=0.0.0
 gop update
+gop install
 ```
 
 ### I want to deploy packages
