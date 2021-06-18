@@ -36,7 +36,19 @@ Searching for packages by author
 ```bash
 gop search --author=felix-hellman
 ```
+Automatically update dependencies to latest version
+```bash
+gop update
+```
 
+e.g.
+
+```bash
+gop init
+gop add --dependency=felix-hellman/awesome --version=0.0.0
+gop add --dependency=felix-hellman/genetics --version=0.0.0
+gop update
+```
 
 ### I want to deploy packages
 
