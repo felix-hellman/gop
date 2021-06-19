@@ -175,7 +175,6 @@ def upload_key(key_file):
 @click.option('--dependency', required=True)
 @click.option('--version', required=True)
 def add_pkg(dependency, version):
-    manifest = {}
     assert re.match(VERSION_REGEX, version), "Invalid version numbering"
     with open('manifest.yaml') as document:
         manifest = yaml.load(document, Loader=Loader)
@@ -237,9 +236,10 @@ def update(dry_run):
 
 @cli.command('login')
 @click.option('--token', required=False)
-def login(token):
+@click.option('--repo', required=False, count=True)
+def login(token, repo):
     if token is None:
-        response = requests.get(BASE + "/login/github/init")
+        response = requests.get(BASE + "/login/github/init" + {True : "?scope=repo", False : ""}[repo])
         webbrowser.open(str(response.content, 'utf-8'))
         with Server(("", 1337), Handler) as httpd:
             httpd.handle_request()
@@ -302,11 +302,28 @@ def fetch_dependencies(repository, dependencies, fetched):
     found_dependencies = []
     for dependency in dependencies:
         matching_dependency(dependency, fetched)
-        print("Fetching " + str(dependency))
-        for found in fetch_dependency(repository, dependency):
-            fetched.append(dependency)
-            if found not in dependencies:
-                found_dependencies.append(found)
+        if "access" in dependency.keys() and "private" in dependency["access"]:
+            print("Fetching from github " + str(dependency))
+            path = str(repository["path"])
+            r = requests.get(path + F"/pkg/github/{dependency['name']}", headers=load_token_header())
+            assert r.status_code == 200, "Failed to fetch private package, probably due to invalid scope"
+            content = str(r.content, 'utf-8')
+            data = b64_decode_string(content)
+            with open('pkg.zip', 'wb') as f:
+                f.write(data)
+            split_name = dependency['name'].split('/')
+            dep_name = split_name[0] + "-" + split_name[1]
+            shutil.unpack_archive('pkg.zip', './tmp/' + dep_name)
+            os.remove("pkg.zip")
+            src =  "./tmp/" + dep_name + "/"+ split_name[1] +"-main" + "/pkg/" + dep_name
+            dst = "./pkg/"
+            shutil.move(src , dst)
+        else:
+            print("Fetching " + str(dependency))
+            for found in fetch_dependency(repository, dependency):
+                fetched.append(dependency)
+                if found not in dependencies:
+                    found_dependencies.append(found)
     return {"dependants": found_dependencies, "dependencies_fetched": fetched}
 
 
@@ -319,10 +336,15 @@ def format_pkg_path(manifest):
 def install():
     with open('manifest.yaml') as document:
         manifest = yaml.load(document, Loader=Loader)
-
         repository = manifest["project"]["repository"][0]
         dependencies = manifest["project"]["dependencies"]
         depency_spec = {"dependants": dependencies, "dependencies_fetched": []}
+        for pkg in os.listdir("./pkg"):
+            author = manifest["project"]["package"]["author"]
+            package_name = manifest["project"]["package"]["name"]
+            main_pkg_name = author + "-" + package_name
+            if main_pkg_name not in pkg:
+                shutil.rmtree("./pkg/" + pkg)
         os.makedirs("./pkg", exist_ok=True)
         while len(depency_spec["dependants"]) > 0:
             depency_spec = fetch_dependencies(repository, depency_spec["dependants"],
