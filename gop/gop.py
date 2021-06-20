@@ -100,6 +100,7 @@ def fetch_dependency(repository, dependency):
             requests.get(path + "/key/" + author, headers={"Content-Type": "application/json"}).content)
         decoded_key = b64_decode_string(fetched_key["publicKey"])
         print(decoded_key)
+        print("\n\n\nDo you want to trust this key? Y/N\n\n")
         choice = input()
         if choice[0] == 'Y' or choice[0] == 'y':
             trust_dict[author] = decoded_key
@@ -117,8 +118,10 @@ def post_package(manifest, payload):
     version = str(manifest["project"]["package"]["version"])
     payload=json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
     r = requests.post(path + "/pkg/add",data=payload, headers=load_token_header())
-    print(r)
-    print(r.content)
+    if r.status_code == 200:
+        print("Package was successfully uploaded")
+    else:
+        print("Failed to upload package")
 
 
 class Server(socketserver.TCPServer):
@@ -295,6 +298,12 @@ def logout():
 def matching_dependency(dependency, l):
     for d in l:
         if d["name"] == dependency["name"]:
+            left_version = d["version"]
+            right_version = dependency["version"]
+            if left_version is None:
+                left_version = ""
+            if right_version is None:
+                right_version = ""
             assert d["version"] != dependency["version"], "Version missmatch aborting"
 
 
@@ -302,6 +311,7 @@ def fetch_dependencies(repository, dependencies, fetched):
     found_dependencies = []
     for dependency in dependencies:
         matching_dependency(dependency, fetched)
+        fetched.append(dependency)
         if "access" in dependency.keys() and "private" in dependency["access"]:
             print("Fetching from github " + str(dependency))
             path = str(repository["path"])
@@ -318,10 +328,13 @@ def fetch_dependencies(repository, dependencies, fetched):
             src =  "./tmp/" + dep_name + "/"+ split_name[1] +"-main" + "/pkg/" + dep_name
             dst = "./pkg/"
             shutil.move(src , dst)
+            manifest = parse_yaml("./tmp/" + dep_name + "/"+ split_name[1] +"-main/manifest.yaml")
+            for found in manifest["project"]["dependencies"]:
+                if found not in dependencies:
+                    found_dependencies.append(found)
         else:
             print("Fetching " + str(dependency))
             for found in fetch_dependency(repository, dependency):
-                fetched.append(dependency)
                 if found not in dependencies:
                     found_dependencies.append(found)
     return {"dependants": found_dependencies, "dependencies_fetched": fetched}
