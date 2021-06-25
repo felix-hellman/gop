@@ -5,7 +5,6 @@ import python_jwt as jwt, jwcrypto.jwk as jwk, datetime
 import os
 import shutil
 import base64
-from gop import ApiClient
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
