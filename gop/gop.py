@@ -107,18 +107,6 @@ def fetch_public_dependency(repository, dependency):
     return unpack(validated)
 
 
-def post_package(manifest, payload):
-    path = str(manifest["project"]["repository"][0]['path'])
-    package_name = str(manifest["project"]["package"]["name"])
-    version = str(manifest["project"]["package"]["version"])
-    payload = json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
-    r = requests.post(path + "/pkg/add", data=payload, headers=load_token_header())
-    if r.status_code == 200:
-        print("Package was successfully uploaded")
-    else:
-        print("Failed to upload package")
-
-
 def load_token_header():
     token = settings.get("token")
     return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
@@ -131,7 +119,7 @@ def is_logged_in():
 
 def create_api_client():
     token = settings.get("token")
-    return ApiClient(token, BASE)
+    return ApiClient(token, str(parse_yaml("./manifest.yaml")["project"]["repository"][0]['path']))
 
 
 @cli.command('ping')
@@ -327,7 +315,9 @@ def b64_decode_string(value):
     return base64.b64decode(value)
 
 
-def pack(directory, key, author, manifest):
+def pack(key, manifest):
+    directory = format_pkg_path(manifest)
+    author = manifest['project']['package']['author']
     shutil.make_archive('pkg', 'zip', directory)
     b64 = b64_encode_file('pkg.zip')
     package_hash = hash_zip('pkg.zip')
@@ -357,9 +347,11 @@ def parse_yaml(manifest):
 def package(key_file):
     key = read_key_from_file(key_file)
     manifest = parse_yaml('manifest.yaml')
-    token = pack(format_pkg_path(manifest), key, manifest['project']['package']['author'], manifest)
-    post_package(manifest, token)
-    pass
+    token = pack(key, manifest)
+    if create_api_client().upload_package(token, manifest):
+        print("Package was successfully uploaded")
+    else:
+        print("Failed to upload package")
 
 
 @cli.command('generate-key-pair')

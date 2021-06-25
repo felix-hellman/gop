@@ -21,6 +21,13 @@ class ApiClient:
         r = requests.post(self.baseUrl + "/key/add", data=data, headers=self.__load_token_header())
         return r.status_code == 200
 
+    def upload_package(self, payload, manifest):
+        package_name = str(manifest["project"]["package"]["name"])
+        version = str(manifest["project"]["package"]["version"])
+        data = json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
+        r = requests.post(self.baseUrl + "/pkg/add", data=data, headers=self.__load_token_header())
+        return r.status_code == 200
+
     def login(self, repo):
         response = requests.get(self.baseUrl + "/login/github/init" + {True: "?scope=repo", False: ""}[repo])
         webbrowser.open(str(response.content, 'utf-8'))
