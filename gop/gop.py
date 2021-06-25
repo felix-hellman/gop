@@ -10,10 +10,9 @@ import python_jwt as jwt, jwcrypto.jwk as jwk, datetime
 import os
 import shutil
 import base64
-import http.server
-import socketserver
 import json
-import webbrowser
+from gop import ApiClient
+from gop import FileLayer
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -124,27 +123,6 @@ def post_package(manifest, payload):
         print("Failed to upload package")
 
 
-class Server(socketserver.TCPServer):
-    # Avoid "address already used" error when frequently restarting the script
-    allow_reuse_address = True
-
-
-class Handler(http.server.BaseHTTPRequestHandler):
-
-    def do_GET(self):
-        self.send_response(200, "OK")
-        code = self.path.split("code=")[1]
-        r = requests.get(BASE + "/login/github?code=" + code)
-        self.end_headers()
-        if r.status_code == 200:
-            settings.set("token", str(r.content, 'utf-8'))
-            settings.save()
-            print("Successfully logged in!")
-            self.wfile.write("You were logged in successfully, you can now close this tab :)".encode("utf-8"))
-        else:
-            self.wfile.write("Something went wrong :(".encode("utf-8"))
-
-
 def load_token_header():
     token = settings.get("token")
     return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
@@ -155,9 +133,14 @@ def is_logged_in():
     return r.status_code == 200
 
 
+
+def create_api_client():
+    token = settings.get("token")
+    return ApiClient(token, BASE)
+
 @cli.command('ping')
 def ping():
-    if is_logged_in():
+    if create_api_client().ping():
         print("You are logged in")
     else:
         print("You are not logged in")
@@ -166,12 +149,11 @@ def ping():
 @cli.command('upload-key')
 @click.option('--key-file', type=click.Path(exists=True, readable=True, path_type=str), required=True)
 def upload_key(key_file):
-    encoded_key = str(b64_encode_file(key_file), 'utf-8')
-    print(encoded_key)
-    r = requests.post(BASE + "/key/add", data=json.dumps({'public_key': encoded_key, 'force_upload': False}),
-                      headers=load_token_header())
-    if r.status_code == 200:
+    encoded_key = FileLayer().b64_encode_file(key_file)
+    if create_api_client().upload_public_key(encoded_key):
         print("Key uploaded successfully")
+    else:
+        print("Failed to upload public key")
 
 
 @cli.command('add')
@@ -242,50 +224,10 @@ def update(dry_run):
 @click.option('--repo', required=False, count=True)
 def login(token, repo):
     if token is None:
-        response = requests.get(BASE + "/login/github/init" + {True : "?scope=repo", False : ""}[repo])
-        webbrowser.open(str(response.content, 'utf-8'))
-        with Server(("", 1337), Handler) as httpd:
-            httpd.handle_request()
+        create_api_client().login(repo)
     else:
         settings.set("token", token)
         settings.save()
-
-
-
-def uploaded_key_ok():
-    with open('manifest.yaml') as document:
-        manifest = yaml.load(document, Loader=Loader)
-        path = manifest["project"]["repository"][0]["path"]
-        author = manifest["project"]["package"]["author"]
-        r = requests.get(path + "/key/" + author, headers={"Content-Type": "application/json"})
-        return r.status_code == 200
-
-
-def print_report(key_file):
-    print(F"Online : {True}\nPrivateKey : {is_key_ok(key_file)}\nPublicKey : {uploaded_key_ok()}")
-
-
-def is_key_ok(key_file):
-    try:
-        key = read_key_from_file(key_file)
-        jwk.JWK.from_pem(key)  # validate
-        return True
-    except TypeError as e:
-        return False
-
-
-def print_offline_report(key_file):
-    print(F"Online : {False}\nPrivateKey : {is_key_ok(key_file)}\nPublicKey : Unknown")
-
-
-@cli.command('prepare')
-@click.option('--key-file', type=click.Path(exists=True, readable=True, path_type=str), required=True)
-def prepare(key_file):
-    logged_in = is_logged_in()
-    if logged_in:
-        print_report(key_file)
-    else:
-        print_offline_report(key_file)
 
 
 @cli.command('logout')
