@@ -55,3 +55,8 @@ class ApiClient:
         r = requests.get(full_path, headers={"Content-Type": "application/json"})
         assert r.status_code == 200, F"Failed to fetch version list : {r.status_code}"
         return json.loads(r.content)
+
+    def search(self, author):
+        r = requests.get(self.baseUrl + "/pkg/list/" + str(author), headers={"Content-Type": "application/json"})
+        assert r.status_code == 200, F"Failed to fetch search results : {r.status_code}"
+        return json.loads(r.content)
