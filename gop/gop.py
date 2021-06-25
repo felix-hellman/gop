@@ -44,6 +44,7 @@ def generate_yaml_lines(name, author, version):
 
     return lines
 
+
 @cli.command('init')
 @click.option("--name", required=False)
 @click.option('--author', required=False)
@@ -82,21 +83,16 @@ def unpack(token):
     return dependencies
 
 
-def fetch_dependency(repository, dependency):
-    version = str(dependency["version"])
-    path = str(repository["path"])
-    assert re.match(VERSION_REGEX, version), "Invalid version numbering"
-    assert re.match(PATH_REGEX, path)
-    p = path + "/pkg/fetch/" + dependency["name"] + "/" + version
-    r = requests.get(p, headers={"Content-Type": "application/json"})
-    response = json.loads(r.content)
+def fetch_public_dependency(repository, dependency):
+    assert re.match(VERSION_REGEX, dependency["version"]), "Invalid version numbering"
+    assert re.match(PATH_REGEX, repository["path"])
+    response = create_api_client().fetch_public_dependency(dependency)
     author = response["author"]
     jwt = response["jwt"]
     trust_dict = settings.get('trust-list', default={})
     if author not in trust_dict.keys():
         print("You don't have this authors public key, do you want to trust this key?")
-        fetched_key = json.loads(
-            requests.get(path + "/key/" + author, headers={"Content-Type": "application/json"}).content)
+        fetched_key = create_api_client().fetch_public_key(author)
         decoded_key = b64_decode_string(fetched_key["publicKey"])
         print(decoded_key)
         print("\n\n\nDo you want to trust this key? Y/N\n\n")
@@ -115,8 +111,8 @@ def post_package(manifest, payload):
     path = str(manifest["project"]["repository"][0]['path'])
     package_name = str(manifest["project"]["package"]["name"])
     version = str(manifest["project"]["package"]["version"])
-    payload=json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
-    r = requests.post(path + "/pkg/add",data=payload, headers=load_token_header())
+    payload = json.dumps({"jwt": payload, 'package_name': package_name, 'version': version})
+    r = requests.post(path + "/pkg/add", data=payload, headers=load_token_header())
     if r.status_code == 200:
         print("Package was successfully uploaded")
     else:
@@ -133,10 +129,10 @@ def is_logged_in():
     return r.status_code == 200
 
 
-
 def create_api_client():
     token = settings.get("token")
     return ApiClient(token, BASE)
+
 
 @cli.command('ping')
 def ping():
@@ -187,7 +183,7 @@ def search(author):
     for match in matches:
         print(match)
         split_match = match.split("/")
-        dependency , version = split_match[0] +"/"+ split_match[1], split_match[2]
+        dependency, version = split_match[0] + "/" + split_match[1], split_match[2]
         print(F"gop add --dependency={dependency} --version={version}\n")
 
 
@@ -198,7 +194,7 @@ def update(dry_run):
     path = str(manifest["project"]["repository"][0]["path"])
     updates = []
     for dependency in manifest['project']['dependencies']:
-        name =  dependency['name']
+        name = dependency['name']
         version = dependency['version']
         full_path = path + "/pkg/list/" + name
         versions = json.loads(requests.get(full_path).content)
@@ -216,7 +212,6 @@ def update(dry_run):
         for update in updates:
             print(update)
         print(yaml.dump(manifest))
-
 
 
 @cli.command('login')
@@ -256,27 +251,16 @@ def fetch_dependencies(repository, dependencies, fetched):
         fetched.append(dependency)
         if "access" in dependency.keys() and "private" in dependency["access"]:
             print("Fetching from github " + str(dependency))
-            path = str(repository["path"])
-            r = requests.get(path + F"/pkg/github/{dependency['name']}", headers=load_token_header())
-            assert r.status_code == 200, "Failed to fetch private package, probably due to invalid scope"
-            content = str(r.content, 'utf-8')
-            data = b64_decode_string(content)
-            with open('pkg.zip', 'wb') as f:
-                f.write(data)
-            split_name = dependency['name'].split('/')
-            dep_name = split_name[0] + "-" + split_name[1]
-            shutil.unpack_archive('pkg.zip', './tmp/' + dep_name)
-            os.remove("pkg.zip")
-            src =  "./tmp/" + dep_name + "/"+ split_name[1] +"-main" + "/pkg/" + dep_name
-            dst = "./pkg/"
-            shutil.move(src , dst)
-            manifest = parse_yaml("./tmp/" + dep_name + "/"+ split_name[1] +"-main/manifest.yaml")
+            content = create_api_client().fetch_private_dependency(dependency)
+            FileLayer().save_b64_pkg_zip(content)
+            FileLayer().unzip(dependency)
+            manifest = FileLayer().load_dependency_manifest(dependency)
             for found in manifest["project"]["dependencies"]:
                 if found not in dependencies:
                     found_dependencies.append(found)
         else:
             print("Fetching " + str(dependency))
-            for found in fetch_dependency(repository, dependency):
+            for found in fetch_public_dependency(repository, dependency):
                 if found not in dependencies:
                     found_dependencies.append(found)
     return {"dependants": found_dependencies, "dependencies_fetched": fetched}
@@ -286,6 +270,7 @@ def format_pkg_path(manifest):
     author = manifest["project"]["package"]["author"]
     package_name = manifest["project"]["package"]["name"]
     return './pkg/' + author + "-" + package_name
+
 
 @cli.command('install')
 def install():
@@ -391,6 +376,7 @@ def generate_key_pair():
 
 if __name__ == '__main__':
     cli()
+
 
 def __main__():
     cli()

@@ -26,3 +26,19 @@ class ApiClient:
         webbrowser.open(str(response.content, 'utf-8'))
         with Server(("", 1337), Handler) as httpd:
             httpd.handle_request()
+
+    def fetch_public_dependency(self, dependency):
+        p = self.baseUrl + "/pkg/fetch/" + dependency["name"] + "/" + dependency["version"]
+        r = requests.get(p, headers={"Content-Type": "application/json"})
+        assert r.status_code == 200, F"Failed to fetch public package : {r.status_code}"
+        return json.loads(r.content)
+
+    def fetch_private_dependency(self, dependency):
+        r = requests.get(self.baseUrl + F"/pkg/github/{dependency['name']}", headers=self.__load_token_header())
+        assert r.status_code == 200, "Failed to fetch private package, probably due to invalid scope"
+        return str(r.content, 'utf-8')
+
+    def fetch_public_key(self, author):
+        r = requests.get(self.baseUrl + "/key/" + author, headers={"Content-Type": "application/json"})
+        assert r.status_code == 200, F"Failed to fetch public key : {r.status_code}"
+        return json.loads(r.content)
