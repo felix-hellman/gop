@@ -158,12 +158,6 @@ class GopController:
     def matching_dependency(self, dependency, l):
         for d in l:
             if d["name"] == dependency["name"]:
-                left_version = d["version"]
-                right_version = dependency["version"]
-                if left_version is None:
-                    left_version = ""
-                if right_version is None:
-                    right_version = ""
                 assert d["version"] != dependency["version"], "Version missmatch aborting"
 
     def fetch_dependencies(self, repository, dependencies, fetched):
