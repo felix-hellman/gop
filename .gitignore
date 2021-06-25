@@ -3,3 +3,4 @@ gop.conf
 private-key.pem
 public-key.pem
 __pycache__/
+venv/
