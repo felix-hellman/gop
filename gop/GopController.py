@@ -192,6 +192,12 @@ class GopController:
         package_name = manifest["project"]["package"]["name"]
         return './pkg/' + author + "-" + package_name
 
+    def get_main_pkg(self, manifest):
+        if "package" in manifest["project"].keys() is not None:
+            author = manifest["project"]["package"]["author"]
+            package_name = manifest["project"]["package"]["name"]
+            return author + "-" + package_name
+        return ""
 
     def install(self):
         with open('manifest.yaml') as document:
@@ -200,9 +206,7 @@ class GopController:
             dependencies = manifest["project"]["dependencies"]
             depency_spec = {"dependants": dependencies, "dependencies_fetched": []}
             for pkg in os.listdir("./pkg"):
-                author = manifest["project"]["package"]["author"]
-                package_name = manifest["project"]["package"]["name"]
-                main_pkg_name = author + "-" + package_name
+                main_pkg_name = self.get_main_pkg(manifest)
                 if main_pkg_name not in pkg:
                     shutil.rmtree("./pkg/" + pkg)
             os.makedirs("./pkg", exist_ok=True)
