@@ -83,8 +83,10 @@ class GopController:
     def ping(self):
         if self.api.ping():
             print("You are logged in")
+            return True
         else:
             print("You are not logged in")
+            return False
 
     def upload_key(self, key_file):
         encoded_key = self.fileLayer.b64_encode_file(key_file)
