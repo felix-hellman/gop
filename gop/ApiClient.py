@@ -49,3 +49,9 @@ class ApiClient:
         r = requests.get(self.baseUrl + "/key/" + author, headers={"Content-Type": "application/json"})
         assert r.status_code == 200, F"Failed to fetch public key : {r.status_code}"
         return json.loads(r.content)
+
+    def fetch_versions(self, dependency):
+        full_path = dependency['version'] + "/pkg/list/" + dependency['name']
+        r = requests.get(full_path, headers={"Content-Type": "application/json"})
+        assert r.status_code == 200, F"Failed to fetch version list : {r.status_code}"
+        return json.loads(r.content)

@@ -179,15 +179,13 @@ def search(author):
 @click.option('--dry-run', required=False, count=True)
 def update(dry_run):
     manifest = parse_yaml("manifest.yaml")
-    path = str(manifest["project"]["repository"][0]["path"])
     updates = []
     for dependency in manifest['project']['dependencies']:
-        name = dependency['name']
-        version = dependency['version']
-        full_path = path + "/pkg/list/" + name
-        versions = json.loads(requests.get(full_path).content)
+        versions = create_api_client().fetch_versions(dependency)
         latest_version = sorted(versions).pop()
+        version = dependency['version']
         if latest_version > version:
+            name = dependency['name']
             updates.append(F"{name}/{version} => {name}/{latest_version}")
             dependency['version'] = latest_version
 
