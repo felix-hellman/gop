@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import click
+import os
 from easysettings import EasySettings
 from gop import ApiClient
 from gop import FileLayer
@@ -23,7 +24,10 @@ def cli():
 
 
 def create_api_client(fileLayer):
-    return ApiClient(settings.get("token"), fileLayer.parse_yaml("./manifest.yaml")["project"]["repository"][0]["path"])
+    if os.path.exists("./manifest.yaml"):
+        url = fileLayer.parse_yaml("./manifest.yaml")["project"]["repository"][0]["path"]
+        return ApiClient(settings.get("token"), url)
+    return ApiClient(settings.get("token"), "")
 
 
 def controller():

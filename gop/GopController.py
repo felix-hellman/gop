@@ -50,7 +50,7 @@ class GopController:
         if not found_ignore:
             with open('.gitignore', 'a') as f:
                 f.writelines(['pkg\n', 'gop.conf\n'])
-        with open('manifest.yaml', 'w') as f:
+        with open('manifest.yaml', 'w+') as f:
             f.writelines(self.generate_yaml_lines(name, author, version))
 
     def fetch_public_dependency(self, repository, dependency):
