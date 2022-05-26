@@ -175,12 +175,14 @@ class GopController:
                 manifest = self.fileLayer.load_dependency_manifest(dependency)
                 for found in manifest["project"]["dependencies"]:
                     if found not in dependencies:
-                        found_dependencies.append(found)
+                            found_dependencies.append(found)
             else:
                 print("Fetching " + str(dependency))
                 for found in self.fetch_public_dependency(repository, dependency):
                     if found not in dependencies:
-                        found_dependencies.append(found)
+                        if type(found) is dict:
+                            print("FOUND  " + str(found))
+                            found_dependencies.append(found)
         return {"dependants": found_dependencies, "dependencies_fetched": fetched}
 
     def format_pkg_path(self, manifest):
@@ -207,6 +209,7 @@ class GopController:
                     shutil.rmtree("./pkg/" + pkg)
             os.makedirs("./pkg", exist_ok=True)
             while len(depency_spec["dependants"]) > 0:
+                print("DEP : " + str(depency_spec))
                 depency_spec = self.fetch_dependencies(repository, depency_spec["dependants"],
                                                   depency_spec["dependencies_fetched"])
 
@@ -233,7 +236,7 @@ class GopController:
     def pack(self, key, manifest):
         author = manifest['project']['package']['author']
         b64, package_hash = self.fileLayer.package_dependency(manifest)
-        payload = {'package': str(b64, 'utf-8'), 'package_hash': package_hash, 'author': author, 'manifest': manifest}
+        payload = {'package': b64, 'package_hash': package_hash, 'author': author, 'manifest': manifest}
         return self.sign_payload(payload, key)
 
     def sign_payload(self, payload, pem):

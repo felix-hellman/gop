@@ -8,7 +8,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name='gop',
-    version='0.0.10',
+    version='0.0.11',
     packages=['gop'],
     url='https://gop.shrimpray.com',
     license='MIT License',

@@ -77,7 +77,7 @@ class FileLayer:
             return yaml.load(document, Loader=Loader)
 
     def unpack_dependency(self, package, manifest):
-        dependencies = manifest["project"]["dependencies"]
+        dependencies = manifest["project"]["package"]
         if dependencies is None:
             dependencies = []
         binary_data = self.b64_decode_string(package)
