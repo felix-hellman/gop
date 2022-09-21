@@ -9,7 +9,7 @@ EasySettings==4.0.0
 idna==2.10
 jwcrypto==0.9.1
 pycparser==2.20
-python-jwt==3.3.0
+python-jwt==3.3.4
 PyYAML==5.4.1
 requests==2.25.1
 six==1.16.0
